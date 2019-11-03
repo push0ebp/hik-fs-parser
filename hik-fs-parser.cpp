@@ -142,7 +142,7 @@ class HikFs
         printf("Last Page Offset : %p\n", footer->last_page_offset);
     }
     
-    void enumerate_pages(struct HIK_BTREE *btree)
+    void EnumeratePages(struct HIK_BTREE *btree)
     {
         struct HIK_PAGE_LIST page_list;
         ReadAt(&page_list, btree->page_list_offset, sizeof(page_list));
@@ -156,12 +156,12 @@ class HikFs
 
     }
 
-    void enumerate()
+    void Enumerate()
     {
         for (int i = 0; i < kNumBtrees_; i++)
         {
             PrintBtree(&btrees_[i]);
-            enumerate_pages(&btrees_[i]);
+            EnumeratePages(&btrees_[i]);
         }
     }
 };
@@ -170,6 +170,6 @@ int main()
 {
     HikFs hikfs("/mnt/d/hik/images/hik.img");
     hikfs.PrintFsInfo();
-    hikfs.enumerate();
+    hikfs.Enumerate();
     return 0;
 }
