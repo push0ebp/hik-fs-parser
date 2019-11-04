@@ -48,7 +48,7 @@ struct HIK_PAGE_LIST
     uint8_t f3[0x40];
 };
 
-struct HIK_PAGE
+struct HIK_PAGE_LIST_ENTRY
 {
     uint64_t offset;
     uint8_t f1[0x9];
@@ -58,6 +58,19 @@ struct HIK_PAGE
     uint32_t end_time;
     uint64_t first_data_block_offset;
     uint8_t f3[0x8];
+};
+
+struct HIK_DATA_BLOCK_ENTRY
+{
+    uint8_t f1[0x8];
+    uint64_t exist;
+    uint8_t f2;
+    uint8_t channel;
+    uint8_t f3[0x6];
+    uint32_t start_time;
+    uint32_t end_time;
+    uint64_t first_data_block_offset;
+    uint8_t f4[0x8];
 };
 
 struct HIK_FOOTER
@@ -127,13 +140,22 @@ class HikFs
         printf("First Page Offset : %p\n", page_list->first_page_offset);
     }
 
-    void PrintPage(struct HIK_PAGE *page)
+    void PrintPageListEntry(struct HIK_PAGE_LIST_ENTRY *entry)
     {
-        printf("============== PAGE ==============\n");
-        printf("Page Offset : %p\n", page->offset);
-        printf("Channel : %d\n", page->channel);
-        printf("Start/End Time : %d / %d\n", page->start_time, page->end_time);
-        printf("First Data Block Offset : %p\n", page->first_data_block_offset);
+        printf("============== PAGE LIST ENTRY ==============\n");
+        printf("Page Offset : %p\n", entry->offset);
+        printf("Channel : %d\n", entry->channel);
+        printf("Start/End Time : %d / %d\n", entry->start_time, entry->end_time);
+        printf("First Data Block Offset : %p\n", entry->first_data_block_offset);
+    }
+
+    void PrintDataBlockEntry(struct HIK_DATA_BLOCK_ENTRY *entry)
+    {
+        printf("============== DATA BLOCK ENTRY ==============\n");
+        printf("Existence : %d\n", entry->exist);
+        printf("Channel : %d\n", entry->channel);
+        printf("Start/End Time : %d / %d\n", entry->start_time, entry->end_time);
+        printf("First Data Block Offset : %p\n", entry->first_data_block_offset);
     }
     
     void PrintFooter(struct HIK_FOOTER *footer)
@@ -142,6 +164,13 @@ class HikFs
         printf("Last Page Offset : %p\n", footer->last_page_offset);
     }
     
+    void PrintDataBlock(uint64_t data_block_offset)
+    {
+        printf("============== DATA BLOCK ==============\n");
+        for (int i = 0; i < 16; i++)
+            printf("%02X ");
+    }
+
     void EnumeratePages(struct HIK_BTREE *btree)
     {
         struct HIK_PAGE_LIST page_list;
@@ -149,9 +178,10 @@ class HikFs
         PrintPageList(&page_list);
         for (int i = 0; i < page_list.num_pages; i++)
         {
-            struct HIK_PAGE page;
-            ReadAt(&page, btree->page_list_offset + sizeof(page_list) + sizeof(page) * i, sizeof(page));
-            PrintPage(&page);
+            struct HIK_PAGE_LIST_ENTRY page_list_entry;
+            ReadAt(&page_list_entry, btree->page_list_offset + sizeof(page_list) + sizeof(page_list_entry) * i, sizeof(page_list_entry));
+            PrintPageListEntry(&page_list_entry);
+            
         }
 
     }
